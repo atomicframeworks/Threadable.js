@@ -8,8 +8,35 @@ This script will create the Threadable constructor function which can be used to
 <script src="Threadable.js"></script>
 ```
 
+## Usage
+Call new Threadable(data[, maxWorkers]) to create a new Threadable object. The data will be set as the .data property on the new object. The optional maxWorkers argument it will be set as the .maxWorkers property on the new Threadable object.
+
+Next spawn workers to process the data via the .spawn() or .map() functions on the Threadable object.
+
+Once the workers are done processing the data in the Threadable object the .result property on the object will be updated with the return values.
+
+You can add a callback function to be executed when the Threadable object is done processing by using the .then(callback) function on the object. The callback will receive the results from processing the data.
+
+You can import functions to be added before the processing function using .import().  Note the function must be a named function such as `function works(){}` and not assigned to a variable like `var doesntWork = function(){}`. 
+
+### Examples
+The example will iterate through the data array creating a new worker for each element in the array. Each worker will execute the Fibonacci function with the element as the argument.
+```js
+
+function fibonacci(n) {
+  return n < 2 ? 1 : fib(n - 1) + fib(n - 2);
+};
+
+var farm = new WorkerFarm([40, 41, 42]);
+
+farm.map(fib).then(function () {
+	console.log(arguments[0]);
+});
+
+```
+
 ## Requirements
-Threadable.js requires the environment to support Web Workers, JSON object, URL object, and the Blob constructor.
+Threadable.js requires the browser environment to support Web Workers, JSON object, URL object, and the Blob constructor.
 
 [Web Workers](https://developer.mozilla.org/en-US/docs/Web/Guide/Performance/Using_web_workers#Browser_Compatibility)
 
@@ -196,33 +223,6 @@ Threadable.js requires the environment to support Web Workers, JSON object, URL 
         </th>
     </tr>
 </table>
-
-## Usage
-Call new Threadable(data[, maxWorkers]) to create a new Threadable object. The data will be set as the .data property on the new object. The optional maxWorkers argument it will be set as the .maxWorkers property on the new Threadable object.
-
-Next spawn workers to process the data via the .spawn() or .map() functions on the Threadable object.
-
-Once the workers are done processing the data in the Threadable object the .result property on the object will be updated with the return values.
-
-You can add a callback function to be executed when the Threadable object is done processing by using the .then(callback) function on the object. The callback will receive the results from processing the data.
-
-You can import functions to be added before the processing function using .import().  Note the function must be a named function such as `function works(){}` and not assigned to a variable like `var doesntWork = function(){}`. 
-
-### Examples
-The example will iterate through the data array creating a new worker for each element in the array. Each worker will execute the Fibonacci function with the element as the argument.
-```js
-
-function fibonacci(n) {
-  return n < 2 ? 1 : fib(n - 1) + fib(n - 2);
-};
-
-var farm = new WorkerFarm([40, 41, 42]);
-
-farm.map(fib).then(function () {
-	console.log(arguments[0]);
-});
-
-```
 
 ## License 
 Threadable.js is released under the MIT license <br>
