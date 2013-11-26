@@ -56,6 +56,7 @@ Threadable.js requires the environment to support Web Workers, JSON object, URL 
     </tr>
 </table>
 
+
 [JSON Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON#Browser_compatibility)
 
 <table>
@@ -101,6 +102,7 @@ Threadable.js requires the environment to support Web Workers, JSON object, URL 
     </tr>
 </table>
 
+
 [URL Object](https://developer.mozilla.org/en-US/docs/Web/API/URL#Browser_compatibility)
 
 <table>
@@ -145,6 +147,7 @@ Threadable.js requires the environment to support Web Workers, JSON object, URL 
         </th>
     </tr>
 </table><br>
+
 
 [Blob Constructor](https://developer.mozilla.org/en-US/docs/Web/API/Blob#Browser_compatibility)
 
