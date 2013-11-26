@@ -27,9 +27,9 @@ function fibonacci(n) {
   return n < 2 ? 1 : fib(n - 1) + fib(n - 2);
 };
 
-var farm = new WorkerFarm([40, 41, 42]);
+var threadable = new Threadable([40, 41, 42]);
 
-farm.map(fib).then(function () {
+threadable.map(fib).then(function () {
 	console.log(arguments[0]);
 });
 
