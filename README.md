@@ -11,7 +11,8 @@ This script will create the Threadable constructor function which can be used to
 ## Requirements
 Threadable.js requires the environment to support Web Workers, JSON object, URL object, and the Blob constructor.
 
-[Web Workers](https://developer.mozilla.org/en-US/docs/Web/Guide/Performance/Using_web_workers#Browser_Compatibility) <br>
+[Web Workers](https://developer.mozilla.org/en-US/docs/Web/Guide/Performance/Using_web_workers#Browser_Compatibility)
+
 <table>
     <tr>
         <th>
@@ -53,9 +54,55 @@ Threadable.js requires the environment to support Web Workers, JSON object, URL 
             6+
         </th>
     </tr>
-</table><br>
+</table>
 
-[JSON Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON#Browser_compatibility) <br>
+[JSON Object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON#Browser_compatibility)
+
+<table>
+    <tr>
+        <th>
+            
+        </th>
+        <th>
+            Chrome
+        </th>
+        <th>
+            Firefox (Gecko)
+        </th>
+        <th>
+            Internet Explorer
+        </th>
+        <th>
+            Opera
+        </th>
+        <th>
+            Safari (WebKit)
+        </th>
+    </tr>
+    <tr>
+        <th>
+            Version
+        </th>
+        <th>
+            8+
+        </th>
+        <th>
+            4+
+        </th>
+        <th>
+            10+
+        </th>
+        <th>
+            15+
+        </th>
+        <th>
+            6+
+        </th>
+    </tr>
+</table>
+
+[URL Object](https://developer.mozilla.org/en-US/docs/Web/API/URL#Browser_compatibility)
+
 <table>
     <tr>
         <th>
@@ -99,51 +146,8 @@ Threadable.js requires the environment to support Web Workers, JSON object, URL 
     </tr>
 </table><br>
 
-[URL Object](https://developer.mozilla.org/en-US/docs/Web/API/URL#Browser_compatibility) <br>
-<table>
-    <tr>
-        <th>
-            
-        </th>
-        <th>
-            Chrome
-        </th>
-        <th>
-            Firefox (Gecko)
-        </th>
-        <th>
-            Internet Explorer
-        </th>
-        <th>
-            Opera
-        </th>
-        <th>
-            Safari (WebKit)
-        </th>
-    </tr>
-    <tr>
-        <th>
-            Version
-        </th>
-        <th>
-            8+
-        </th>
-        <th>
-            4+
-        </th>
-        <th>
-            10+
-        </th>
-        <th>
-            15+
-        </th>
-        <th>
-            6+
-        </th>
-    </tr>
-</table><br>
+[Blob Constructor](https://developer.mozilla.org/en-US/docs/Web/API/Blob#Browser_compatibility)
 
-[Blob Constructor](https://developer.mozilla.org/en-US/docs/Web/API/Blob#Browser_compatibility) <br>
 <table>
     <tr>
         <th>
@@ -185,7 +189,7 @@ Threadable.js requires the environment to support Web Workers, JSON object, URL 
             5.1+
         </th>
     </tr>
-</table><br>
+</table>
 
 ## Usage
 Call new Threadable(data[, maxWorkers]) to create a new Threadable object. The data will be set as the .data property on the new object. The optional maxWorkers argument it will be set as the .maxWorkers property on the new Threadable object.
