@@ -146,7 +146,7 @@ Threadable.js requires the environment to support Web Workers, JSON object, URL 
             6+
         </th>
     </tr>
-</table><br>
+</table>
 
 
 [Blob Constructor](https://developer.mozilla.org/en-US/docs/Web/API/Blob#Browser_compatibility)
