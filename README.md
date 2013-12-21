@@ -19,7 +19,11 @@ Once the workers are done processing the data in the Threadable object the .resu
 
 You can import functions to be added before the processing function using .import().  Note functions must be a named functions such as `function works(){}` and not assigned to a variable like `var doesntWork = function(){}`. 
 
-Each time .map() or .spawn() is called on the threadable object it will push a new process object to the .processes array attribute.  This allows you to execute the worker function multiple times and collect the results in the processes array object. The threadable object contains a .processing attribute that is a counter. The count is incremented each time for each new .map() or .spawn() process.  When the .map() or .spawn() processes have completed they will decrement the processing count attribute. This way you can call .map() or .spawn() multiple times and keep track of how many are still waiting to be returned.
+Each time .map() or .spawn() is called on the threadable object it will push a new process object to the .processes array attribute.  This allows you to execute the worker function multiple times and collect the results in the processes array object. 
+
+The threadable object contains a .processing attribute that is a counter. The count is incremented each time for each new .map() or .spawn() process.  
+
+When the .map() or .spawn() processes have completed they will decrement the processing count attribute. This way you can call .map() or .spawn() multiple times and keep track of how many are still waiting to be returned.
 
 The process objects contain references to the spawned workers as the .workers attribute. When the worker is finished processing and released it will be removed from this array.
 
