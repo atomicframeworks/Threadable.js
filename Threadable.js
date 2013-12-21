@@ -21,14 +21,13 @@ var Threadable = (function () {
                     importRef = imports[i];
 
                     // Check if the resources is an absolute url
-                    if (imports[i].substring(0, 7) !== 'http://' && imports[i].substring(0, 8) !== 'https://' ) {
+                    if (imports[i].substring(0, 7) !== 'http://' && imports[i].substring(0, 8) !== 'https://') {
                         // If the url is not absolute and doesn't start with a slash assume it is relative to the path & not root
                         if (imports[i].substring(0, 1) !== '/') {
                             importRef = window.location.pathname + '/' + importRef;
                         }
                         importRef = window.location.protocol + '//' + window.location.host + importRef;
-                        
-                    }            
+                    }
                     funcStr += 'importScripts(\'' + importRef + '\');';
                 } else if (typeof imports[i] === 'function') {
                     // Else if the import is a function just add it via .toString()
@@ -48,12 +47,18 @@ var Threadable = (function () {
             return new Worker(
                 createObjectURL(new Blob([funcStr], {type: 'text/javascript'}))
             );
+        },
+        STATES = {
+            PENDING: 0,
+            RESOLVED: 1,
+            REJECTED: 2
         };
 
-    // Worker Farm Factory
+    // Worker factory function
     return function (data, maxWorkers) {
         var that = this;
         that.data = data;
+        that.processing = 0;
         that.processes = [];
         that.imports = [];
         that.result = undefined;
@@ -62,131 +67,162 @@ var Threadable = (function () {
             var i = 0, l = arguments.length;
             while (i < l) {
                 that.imports.push(arguments[i]);
-
                 i++;
             }
             return that;
         };
-        that.errorReceiver = function (e){
-            throw e.data;
-        };
-        // Spawn an anonymous worker and return that for chaining
+        // Spawn an anonymous worker and send data to it
+        // Return Promise object
         that.spawn = function (func) {
-            // Make sure we have a function
-            if (typeof func !== "function") {
-                throw new TypeError(func + " is not a function");
-            }
-            // Create new worker & process
-            var worker = new AnonymousWorker(func, that.data, that.imports),
-                process = {
-                    workers: [],
-                    processing: 0,
-                    result: undefined
-                };
-            // Push process to processes array
-            that.processes.push(process);
+            // Increment processing count on threadable object
+            that.processing++;
 
-            // Push worker to farm pool & increment the processing count
-            process.workers.push(worker);
-            process.processing++;
-
-            worker.onmessage = function (oEvent) {
-                that.result = process.result = oEvent.data;
-                // decrement the processing count
-                process.processing--;
-
-                // If callback for then execute on message
-                if (that.thenCallback) {
-                    that.thenCallback(process.result);
+            return new Promise(function (resolve, reject) {
+                // Make sure we have a function
+                if (typeof func !== "function") {
+                    throw new TypeError(func + " is not a function");
                 }
-
-                // Terminate worker and clear the worker array
-                worker.terminate();
-                process.workers = [];
-            };
-            worker.onerror = that.errorReceiver;
-
-            // Return Farm object for chaining
-            return that;
-        };
-        // Set a callback to the thenCallback property and return that for chaining
-        that.then = function (func) {
-            if (typeof func !== "function") {
-                throw new TypeError(func + " is not a function");
-            }
-            // Set the callback to the object
-            that.thenCallback = func;
-            // Return Farm object for chaining
-            return that;
-        };
-        that.map = function (func) {
-            // Make sure we have a function
-            if (typeof func !== "function") {
-                throw new TypeError(func + " is not a function");
-            }
-            var i = 0, l = that.data.length,
-                process = {
-                    workers: [],
-                    dataNum: 0,
-                    processing: 0,
-                    result: undefined
-                },
-                worker, workersLength, r = [],
-                onMessageScope = function (worker, counter, workersLength) {
-                    worker.onmessage = function (oEvent) {
-                        r[counter] = oEvent.data;
-                        // Decrement the processing count
-                        process.processing--;
-                        // Terminate and remove the worker
-                        worker.terminate();
-                        delete process.workers[workersLength];
-
-                        // If no more are processing set the data
-                        if (!process.processing && r.length === that.data.length) {
-                            that.result = process.result = r;
-                            // If callback for then execute on message
-                            if (that.thenCallback) {
-                                that.thenCallback(process.result);
-                            }
-                            // Clear the worker array of empty workers
-                            process.workers = [];
-                        } else if (process.dataNum < that.data.length && r.length < that.data.length) {
-                            // Create new worker and get current length of pool
-                            worker = new AnonymousWorker(func, that.data[process.dataNum], that.imports);
-                            workersLength = process.workers.length;
-                            // Scope our variables by sending to onMessageScope
-                            onMessageScope(worker, process.dataNum);
-                            // Push worker to farm pool & increment the processing count
-                            process.workers[workersLength] = worker;
-                            process.processing++;
-                            process.dataNum++;
-                        }
+                // Create new worker & process
+                var worker = new AnonymousWorker(func, that.data, that.imports),
+                    process = {
+                        workers: [],
+                        processing: 0,
+                        processNum: 0,
+                        state: STATES.PENDING,
+                        result: undefined
                     };
-                    worker.onerror = that.errorReceiver;
-                },
-                doWork = function (i) {
-                    // Create new worker and get current length of pool
-                    worker = new AnonymousWorker(func, that.data[i], that.imports);
-                    workersLength = process.workers.length;
+                // Push process to processes array
+                that.processes.push(process);
 
-                    // Push worker to farm pool & increment the processing count
-                    process.workers[workersLength] = worker;
-                    process.processing++;
-                    process.dataNum++;
+                // Push worker to pool & increment the processing count
+                process.workers.push(worker);
+                process.processing++;
 
-                    // Scope our variables by sending to onMessageScope
-                    onMessageScope(worker, i, workersLength);
+                worker.onmessage = function (oEvent) {
+                    that.result = process.result = oEvent.data;
+                    // decrement the processing count
+                    process.processing--;
+
+                    // Set process state to resolved
+                    process.state = STATES.RESOLVED;
+
+                    // Terminate worker and clear the worker array
+                    worker.terminate();
+                    process.workers = [];
+
+                    // Update processing on threadable object
+                    that.processing--;
+
+                    // Resolve the promise with the data
+                    resolve(that.result);
+
                 };
-            // Push process to processes
-            that.processes.push(process);
-            while (i < l) {
-                if (that.maxWorkers && i >= that.maxWorkers) {
-                    break;
+                // Worker error reject with the error message
+                worker.onerror = function (e) {
+                    // Update processing on threadable object
+                    that.processing--;
+
+                    // Set process state to rejected
+                    process.state = STATES.REJECTED;
+
+                    reject(new Error(e.data));
+                };
+
+            });
+        };
+        // Spawn multiple workers and map each piece of data using a worker
+        // Return Promise Object
+        that.map = function (func) {
+            // Increment processing count on threadable object
+            that.processing++;
+
+            // Return Promise object
+            return new Promise(function (resolve, reject) {
+                // Make sure we have a function
+                if (typeof func !== "function") {
+                    throw new TypeError(func + " is not a function");
                 }
-                doWork(i++);
-            }
-            // Return Farm object for chaining
-            return that;
+                var i = 0, l = that.data.length,
+                    process = {
+                        data: that.data,
+                        workers: [],
+                        processNum: 0,
+                        processing: 0,
+                        result: undefined
+                    },
+                    worker, workersLength, r = [],
+                    onMessageScope = function (worker, counter, workersLength) {
+                        worker.onmessage = function (oEvent) {
+                            r[counter] = oEvent.data;
+                            // Decrement the processing count
+                            process.processing--;
+                            // Terminate and remove the worker
+                            worker.terminate();
+                            delete process.workers[workersLength];
+
+                            // If no more are processing set the data
+                            if (!process.processing && r.length === that.data.length) {
+                                that.result = process.result = r;
+
+                                // Clear the worker array of empty workers
+                                process.workers = [];
+                                // Reset process num
+                                process.processNum = undefined;
+                                
+                                // Update processing on threadable object
+                                that.processing--;
+
+                                // Set process state to resolved
+                                process.state = STATES.RESOLVED;
+
+                                // Resolve the promise with the data
+                                resolve(that.result);
+
+                            } else if (process.processNum < that.data.length && r.length < that.data.length) {
+                                // Create new worker and get current length of pool
+                                worker = new AnonymousWorker(func, that.data[process.processNum], that.imports);
+                                workersLength = process.workers.length;
+                                // Scope our variables by sending to onMessageScope
+                                onMessageScope(worker, process.processNum);
+                                // Push worker to farm pool & increment the processing count
+                                process.workers[workersLength] = worker;
+                                process.processing++;
+                                process.processNum++;
+                            }
+                        };
+                        // Worker error reject with the error message
+                        worker.onerror = function (e) {
+                            // Update processing on threadable object
+                            that.processing--;
+
+                            // Set process state to rejected
+                            process.state = STATES.REJECTED;
+
+                            reject(new Error(e.data));
+                        };
+                    },
+                    doWork = function (i) {
+                        // Create new worker and get current length of pool
+                        worker = new AnonymousWorker(func, that.data[i], that.imports);
+                        workersLength = process.workers.length;
+
+                        // Push worker to farm pool & increment the processing count
+                        process.workers[workersLength] = worker;
+                        process.processing++;
+                        process.processNum++;
+
+                        // Scope our variables by sending to onMessageScope
+                        onMessageScope(worker, i, workersLength);
+                    };
+                // Push process to processes
+                that.processes.push(process);
+                while (i < l) {
+                    if (that.maxWorkers && i >= that.maxWorkers) {
+                        break;
+                    }
+                    doWork(i++);
+                }
+            });
         };
     };
 }());
