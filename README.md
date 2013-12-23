@@ -4,6 +4,7 @@ A Promise based way to create anonymous Web Workers. No external worker files ne
 ## Installation
 1. Include the source script in your html <br>
 This script will create the Threadable constructor function which can be used to create Threadable objects.
+
 ```html
 <script src="Threadable.js"></script>
 ```
