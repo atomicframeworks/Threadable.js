@@ -29,7 +29,7 @@ The process objects contain references to the spawned workers as the .workers at
 
 The process objects also contain a .state property to represent if their promise is pending: 0, resolved: 1, or rejected: 2.
 
-### Examples
+## Examples
 The example will iterate through the data array creating a new worker for each element in the array. Each worker will execute the Fibonacci function with the element as the argument.
 ```js
 
