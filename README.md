@@ -9,7 +9,7 @@ This script will create the Threadable constructor function which can be used to
 ```
 
 ## Usage
-Call new Threadable(data[, maxWorkers]) to create a new Threadable object. The data will be set as the .data property on the new object. The optional maxWorkers argument it will be set as the .maxWorkers property on the new Threadable object.
+Call new Threadable(data[, maxWorkers]) to create a new Threadable object. The data will be set as the .data property on the new object. The optional maxWorkers argument will be set as the .maxWorkers property on the new Threadable object.
 
 Next spawn workers to process the data via the .spawn() or .map() functions on the Threadable object.
 
