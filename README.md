@@ -40,8 +40,8 @@ function fibonacci(n) {
 
 var threadable = new Threadable([40, 41, 42]);
 
-threadable.map(fibonacci).then(function () {
-	console.log(arguments[0]);
+threadable.map(fibonacci).then(function (data) {
+	console.log(data);
 });
 
 ```
